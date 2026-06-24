@@ -1,5 +1,5 @@
 interface:
   display_name: "Dify DSL Cycle"
-  short_description: "Import, run, and iterate Dify DSLs through Console API."
+  short_description: "Import, run, and iterate Dify DSLs, including remote Docker discovery."
   brand_color: "#1F8A70"
-  default_prompt: "Use $dify-dsl-cycle to import this Dify DSL, run a test query, inspect the result, and help me iterate."
+  default_prompt: "Use $dify-dsl-cycle to deploy this Dify DSL. If I provide an SSH target, Docker path, Compose command, and URL, discover the Console API key and workspace automatically."

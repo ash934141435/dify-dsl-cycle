@@ -6,7 +6,8 @@ description: >
   advanced-chat draft workflow, inspect compact streamed results, edit the DSL,
   and redeploy. Use when working with Dify app/workflow DSL YAML files that need
   server-side deployment and test runs through DIFY_BASE_URL, API key, workspace
-  id, app id, workflow inputs, or file inputs.
+  id, app id, workflow inputs, file inputs, or SSH access to a remote Docker
+  Compose Dify deployment.
 ---
 
 # Dify DSL Cycle
@@ -33,10 +34,12 @@ must not store real server URLs, API keys, workspace ids, or uploaded file ids i
 repo files unless the user explicitly asks.
 
 On first use in a thread, check whether these values are available. If any are
-missing, do not run the script yet. First tell the user how to find the missing
-values, then use the runtime's structured question/user-input tool to collect
-them. If no structured question tool is available in the current runtime, ask in
-normal chat as the fallback. Do not guess local deployment values.
+missing and the user provided SSH access plus a Dify URL, Docker path, or Compose
+startup command, first try the remote Docker discovery flow below. If discovery
+cannot produce the missing values, tell the user exactly what is still missing,
+then use the runtime's structured question/user-input tool to collect it. If no
+structured question tool is available, ask in normal chat as the fallback. Do not
+guess deployment values.
 
 - `DIFY_BASE_URL`: Dify Console base URL, including `http://` or `https://`, for
   example `http://localhost:8080`.
@@ -44,6 +47,35 @@ normal chat as the fallback. Do not guess local deployment values.
 - `DIFY_WORKSPACE_ID`: Workspace id to send as `X-WORKSPACE-ID`.
 - `DIFY_APP_ID`: optional; only needed when the user wants to target a known app
   before `.dify-cycle-state.json` exists.
+
+Remote Docker discovery:
+
+1. Match the URL host to a configured SSH server when possible; otherwise ask for
+   the SSH target. Use the user-provided URL as `DIFY_BASE_URL`, keeping only
+   scheme, host, and port.
+2. Use the user-provided Docker path and startup command to identify the Compose
+   project. Prefer running containers over parsing YAML:
+   `docker ps --format '{{.Names}}\t{{.Ports}}\t{{.Labels}}'`.
+3. Read only the admin API fields from the remote `.env` in the Compose path:
+   `ADMIN_API_KEY_ENABLE` and `ADMIN_API_KEY`. If enable is `true` and the key is
+   non-empty, use `ADMIN_API_KEY` as `DIFY_API_KEY`. Do not print the key or store
+   it in repo files.
+4. If the API container is reachable, verify that `ADMIN_API_KEY_ENABLE` and
+   `ADMIN_API_KEY` are present in its runtime environment before importing. If
+   `.env` has them but the container does not, report that the Compose file is
+   not passing the variables; do not edit Compose files or restart services
+   unless the user asks.
+5. Get `DIFY_WORKSPACE_ID` from the Dify Postgres container. Prefer the DB
+   container that belongs to the Compose path/project and whose service label is
+   `db` or `db_postgres`, then run:
+
+```sh
+docker exec <db-container> sh -lc 'psql -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-dify}" -t -A -F "|" -c "select id, name, status, created_at from tenants order by created_at desc;"'
+```
+
+6. If multiple tenants are returned, use the newest `normal` tenant unless the
+   user specified a workspace. If multiple matching Dify deployments or DB
+   containers are found, ask the user to choose before importing.
 
 Tell local-deployment users how to get them:
 
