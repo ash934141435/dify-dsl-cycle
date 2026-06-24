@@ -1,0 +1,5 @@
+interface:
+  display_name: "Dify DSL Cycle"
+  short_description: "Import, run, and iterate Dify DSLs through Console API."
+  brand_color: "#1F8A70"
+  default_prompt: "Use $dify-dsl-cycle to import this Dify DSL, run a test query, inspect the result, and help me iterate."
