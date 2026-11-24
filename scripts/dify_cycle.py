@@ -3,11 +3,14 @@ import argparse
 import json
 import mimetypes
 import os
+import sys
 import tempfile
 import uuid
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+sys.stdout.reconfigure(errors="replace")
 
 
 def env(name, *fallbacks):
