@@ -222,13 +222,21 @@ def print_event_summary(event):
         print("event=" + " ".join(part for part in (name, title, status) if part))
     elif name in {"workflow_started", "workflow_finished", "message_end"}:
         print("event=" + " ".join(part for part in (name, status) if part))
+        if name == "workflow_finished" and data.get("outputs"):
+            print("outputs=" + json.dumps(data["outputs"], ensure_ascii=False))
     if error:
         print(f"error={error}")
 
 
 def run_draft(base_url, headers, app_id, query, inputs, files, timeout, raw_events):
-    payload = {"inputs": inputs, "query": query, "files": files}
-    url = f"{base_url}/console/api/apps/{app_id}/advanced-chat/workflows/draft/run"
+    _, info = request_json("GET", f"{base_url}/console/api/apps/{app_id}", headers, timeout=timeout)
+    mode = (info or {}).get("mode")
+    if mode == "workflow":
+        payload = {"inputs": inputs, "files": files}
+        url = f"{base_url}/console/api/apps/{app_id}/workflows/draft/run"
+    else:
+        payload = {"inputs": inputs, "query": query, "files": files}
+        url = f"{base_url}/console/api/apps/{app_id}/advanced-chat/workflows/draft/run"
     req = urllib.request.Request(
         url,
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),

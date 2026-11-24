@@ -2,8 +2,8 @@
 name: dify-dsl-cycle
 description: >
   Automate the Dify DSL iteration loop through the Dify Console API: import a
-  YAML DSL, optionally confirm pending imports, upload local files, run an
-  advanced-chat draft workflow, inspect compact streamed results, edit the DSL,
+  YAML DSL, optionally confirm pending imports, upload local files, run a
+  draft workflow (workflow or advanced-chat app), inspect compact streamed results, edit the DSL,
   and redeploy. Use when working with Dify app/workflow DSL YAML files that need
   server-side deployment and test runs through DIFY_BASE_URL, API key, workspace
   id, app id, workflow inputs, file inputs, or SSH access to a remote Docker
@@ -18,7 +18,7 @@ Use this skill to run the practical Dify DSL loop:
 
 1. Import or overwrite a DSL YAML through the Console API.
 2. Confirm pending imports when Dify asks for confirmation.
-3. Run an advanced-chat draft workflow.
+3. Run a draft workflow (workflow or advanced-chat mode).
 4. Pass normal workflow inputs.
 5. Upload local files and pass them into workflow file variables.
 6. Read compact node status and the final answer.
@@ -172,7 +172,7 @@ Use `--files-json '[...]'` only for top-level chat message files. Most Dify work
 
 ## Verified file flow
 
-The local upload flow has been verified against a Dify 1.14.2 Console API:
+The local upload flow has been verified against a Dify 1.20.0 Console API:
 
 1. `POST /console/api/files/upload` with multipart field `file`.
 2. Read the response `id`.
